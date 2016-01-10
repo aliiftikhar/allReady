@@ -17,7 +17,11 @@
 
 <div class="row">
     <div class="col-md-12">
-        <p class="date-address">@Model.StartDate.ToString("D") - @Model.EndDate.ToString("D")</p>
+        <p class="date-address">
+            <time value="Model.StartDate" format="D"></time> - <time value="Model.EndDate" format="D"></time>
+            <em><time-zone-name class="text-muted" time-zone-id="@Model.TimeZoneId"></time-zone-name></em>
+        </p>
+
     </div>
 </div>
 <div class="row">
@@ -84,7 +88,7 @@
 <div class="row">
     <div class="col-md-12">
         <div class="campaign-sponsor">
-            <strong><a asp-controller="Tenant" asp-action="ShowTenant" asp-route-id="@Model.TenantId">@Model.TenantName</a></strong>
+            <strong><a asp-controller="Organization" asp-action="ShowOrganization" asp-route-id="@Model.OrganizationId">@Model.OrganizationName</a></strong>
         </div>
     </div>
 </div>

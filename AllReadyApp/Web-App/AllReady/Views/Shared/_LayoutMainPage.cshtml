@@ -36,7 +36,7 @@
 
     <div class="row home-banner">
         <div class="col-md-12">
-          <div class="center"><a asp-controller="Home" asp-action="Aesop"><img src="~/images/Web-Logo.png" alt="Logo image for the project" class="img-responsive center-block" /></a></div>
+          <div class="center"><img src="~/images/Web-Logo.png" alt="Logo image for the project" class="img-responsive center-block" /></div>
             <h3 class="text-center sub-title">Get connected. Work together. Be prepared.</h3>
         </div>
     </div>
@@ -45,15 +45,10 @@
         @RenderBody()
 
     </div>
-    <footer class="main-page-footer">
-        <p class="text-center">
-            <img src="~/images/fb.png" alt="Like Humanitarian Toolbox on Facebook" /> 
-            <a href="https://twitter.com/htbox"><img src="~/images/twitter.png" alt="Follow Humanitarian Toolbox on Twitter" /></a> 
-            <img src="~/images/instagram.png" alt="Instagram account" /> 
-            <img src="~/images/youtube.png" alt="YouTube" />
-        </p>
-        <p class="text-center">Powered by <br /><a href="http://www.htbox.org/">Humanitarian Toolbox</a></p>
-    </footer>
+    @{
+        ViewData["footerCssClass"] = "main-page-footer";
+    }
+    @await Html.PartialAsync("_Footer")
     @await Html.PartialAsync("_Version")
     <environment names="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>

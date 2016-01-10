@@ -14,24 +14,27 @@ using System;
 namespace AllReady.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize("TenantAdmin")]
+    [Authorize("OrgAdmin")]
     public class CampaignController : Controller
     {
-        private readonly IAllReadyDataAccess _dataAccess;
         private readonly IMediator _bus;
         private readonly IImageService _imageService;
 
-        public CampaignController(IMediator bus, IImageService imageService, IAllReadyDataAccess dataAccess)
+        public CampaignController(IMediator bus, IImageService imageService)
         {
             _bus = bus;
             _imageService = imageService;
-            _dataAccess = dataAccess;
         }
 
         // GET: Campaign
         public IActionResult Index()
         {
-            var campaigns = _bus.Send(new CampaignListQuery());
+            var query = new CampaignListQuery();
+            if (User.IsUserType(UserType.OrgAdmin))
+            {
+                query.OrganizationId = User.GetOrganizationId();
+            }
+            var campaigns = _bus.Send(query);
             return View(campaigns);
         }
 
@@ -44,7 +47,7 @@ namespace AllReady.Areas.Admin.Controllers
                 return HttpNotFound();
             }
 
-            if (!User.IsTenantAdmin(campaign.TenantId))
+            if (!User.IsOrganizationAdmin(campaign.OrganizationId))
             {
                 return HttpUnauthorized();
             }
@@ -54,11 +57,11 @@ namespace AllReady.Areas.Admin.Controllers
 
         // GET: Campaign/Create
         public IActionResult Create()
-        {
+        {            
             return View("Edit", new CampaignSummaryModel()
             {
                 StartDate = DateTime.Now,
-                EndDate = DateTime.Now.AddMonths(1)
+                EndDate = DateTime.Now.AddMonths(1)                
             });
         }
 
@@ -72,7 +75,7 @@ namespace AllReady.Areas.Admin.Controllers
                 return HttpNotFound();
             }
 
-            if (!User.IsTenantAdmin(campaign.TenantId))
+            if (!User.IsOrganizationAdmin(campaign.OrganizationId))
             {
                 return HttpUnauthorized();
             }
@@ -90,7 +93,7 @@ namespace AllReady.Areas.Admin.Controllers
                 return HttpBadRequest();
             }
 
-            if (!User.IsTenantAdmin(campaign.TenantId))
+            if (!User.IsOrganizationAdmin(campaign.OrganizationId))
             {
                 return HttpUnauthorized();
             }
@@ -101,7 +104,7 @@ namespace AllReady.Areas.Admin.Controllers
                 {
                     if (fileUpload.IsAcceptableImageContentType())
                     {
-                        campaign.ImageUrl = await _imageService.UploadCampaignImageAsync(campaign.TenantId, campaign.Id, fileUpload);
+                        campaign.ImageUrl = await _imageService.UploadCampaignImageAsync(campaign.OrganizationId, campaign.Id, fileUpload);
                     }
                     else
                     {
@@ -125,7 +128,7 @@ namespace AllReady.Areas.Admin.Controllers
             {
                 return HttpNotFound();
             }
-            if (!User.IsTenantAdmin(campaign.TenantId))
+            if (!User.IsOrganizationAdmin(campaign.OrganizationId))
             {
                 return HttpUnauthorized();
             }
@@ -140,7 +143,7 @@ namespace AllReady.Areas.Admin.Controllers
         {
             CampaignSummaryModel campaign = _bus.Send(new CampaignSummaryQuery { CampaignId = id });
 
-            if (!User.IsTenantAdmin(campaign.TenantId))
+            if (!User.IsOrganizationAdmin(campaign.OrganizationId))
             {
                 return HttpUnauthorized();
             }

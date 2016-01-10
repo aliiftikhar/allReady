@@ -92,7 +92,7 @@ namespace AllReady
             // Add Authorization rules for the app
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("TenantAdmin", b => b.RequireClaim(Security.ClaimTypes.UserType, "TenantAdmin", "SiteAdmin"));
+                options.AddPolicy("OrgAdmin", b => b.RequireClaim(Security.ClaimTypes.UserType, "OrgAdmin", "SiteAdmin"));
                 options.AddPolicy("SiteAdmin", b => b.RequireClaim(Security.ClaimTypes.UserType, "SiteAdmin"));
             });
 
@@ -112,7 +112,6 @@ namespace AllReady
             services.AddSingleton((x) => Configuration);
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
-            services.AddSingleton<IClosestLocations, SqlClosestLocations>();
             services.AddTransient<IAllReadyDataAccess, AllReadyDataAccessEF7>();
             services.AddSingleton<IImageService, ImageService>();
             //services.AddSingleton<GeoService>();
@@ -294,6 +293,7 @@ namespace AllReady
             {
                 await sampleData.CreateAdminUser();
             }
+
         }
 
         public static void Main(string[] args) => WebApplication.Run<Startup>(args);

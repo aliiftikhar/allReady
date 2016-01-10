@@ -1,9 +1,10 @@
 ﻿@model AllReady.ViewModels.ActivityViewModel
 @using System.Security.Claims
+@using AllReady.Security;
 
 @{
     ViewBag.Title = $"{Model.Title}";
-
+    var userTimeZoneId = User.GetTimeZoneId();
 }
 
 <div class="row">
@@ -18,7 +19,16 @@
             }
             <div class="@(string.IsNullOrEmpty(Model.ImageUrl) ? "col-sm-12" : "col-sm-10" )">
                 <h2>@Model.Title</h2>
-                <p class="date-address">@Model.StartDateTime.ToString("F") - @Model.EndDateTime.ToString("F")</p>
+                <p class="date-address"><time value="Model.StartDateTime" format="F"></time> - <time value="Model.EndDateTime" format="F"></time>
+            <em><time-zone-name time-zone-id="@Model.TimeZoneId"></time-zone-name></em></p>
+            @if (!string.IsNullOrEmpty(userTimeZoneId) && Model.TimeZoneId != userTimeZoneId)
+            {
+                <p>
+                    <time value="Model.StartDateTime" target-time-zone-id="@userTimeZoneId" format="F"></time> - <time value="Model.EndDateTime" format="F" target-time-zone-id="@userTimeZoneId"></time>
+                    <em><time-zone-name time-zone-id="@userTimeZoneId"></time-zone-name></em>
+                </p>
+            }
+               
             </div>
         </div>
         <div class="row">
@@ -35,7 +45,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <h3>Campaign Organizer</h3>
-                <h4><a asp-controller="Tenant" asp-action="ShowTenant" asp-route-id="@Model.TenantId">@Model.TenantName</a></h4>
+                <h4><a asp-controller="Organization" asp-action="ShowOrganization" asp-route-id="@Model.OrganizationId">@Model.OrganizationName</a></h4>
             </div>
         </div>
 
@@ -195,14 +205,14 @@
                                 <div class="form-group">
                                     <label asp-for="SignupModel.PreferredEmail" class="control-label col-md-4"></label>
                                     <div class="col-md-8">
-                                        <input type="text" asp-for="SignupModel.PreferredEmail" class="form-control" />
+                                        <input type="text" asp-for="SignupModel.PreferredEmail" class="form-control" placeholder="email_address@your_provider.com" />
                                         <span asp-validation-for="SignupModel.PreferredEmail" class="text-danger"></span>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label asp-for="SignupModel.PreferredPhoneNumber" class="control-label col-md-4"></label>
                                     <div class="col-md-8">
-                                        <input type="text" asp-for="SignupModel.PreferredPhoneNumber" class="form-control" />
+                                        <input type="text" id="phone-input" asp-for="SignupModel.PreferredPhoneNumber" class="form-control" placeholder="(XXX) XXX-XXXX" />
                                         <span asp-validation-for="SignupModel.PreferredPhoneNumber" class="text-danger"></span>
                                     </div>
                                 </div>
@@ -213,30 +223,18 @@
                                         <span asp-validation-for="SignupModel.AdditionalInfo" class="text-danger"></span>
                                     </div>
                                 </div>
-                                @if (Model.RequiredSkills?.Count > 0)
-                                {
-                                    <div class="form-group">
+                                    <div class="form-group" data-bind="visible: unassociatedSkills.length">
                                         <label class="control-label col-md-4">Associate new skills?</label>
                                         <div class="col-md-8">
-                                            <ul class="list-unstyled form-control-static">
-                                                @foreach (var skill in Model.RequiredSkills)
-                                                {
-                                                    if (!Model.UserSkills.Any(us => us.Id == skill.Id))
-                                                    {
-                                                        <li>
-                                                            <input type="checkbox" id="@($"skillId{skill.Id}")" name="SignupModel.AddSkillIds" value="@skill.Id" />
-                                                            <label for="@($"skillId{skill.Id}")">@skill.HierarchicalName</label>
-                                                            @if (!string.IsNullOrWhiteSpace(skill.Description))
-                                                            {
-                                                                <span class="fa fa-question-circle" data-bind="visible: '@skill.Description', tooltip: { title: '@skill.Description', placement: 'top' }" aria-hidden="true"></span>
-                                                            }
-                                                        </li>
-                                                    }
-                                                }
+                                            <ul class="list-unstyled form-control-static" data-bind="foreach: unassociatedSkills">
+                                                <li>
+                                                    <input type="checkbox" name="SignupModel.AddSkillIds" data-bind="attr: { id: 'skillNumber' + $index()}, value: Id" />
+                                                    <label data-bind="attr: { for: 'skillNumber' + $index()}, text: HierarchicalName"></label>
+                                                    <span class="fa fa-question-circle" data-bind="visible: Description, tooltip: { title: Description, placement: 'top' }" aria-hidden="true"></span>
+                                                </li>
                                             </ul>
                                         </div>
                                     </div>
-                                }
                             </div>
                         </div>
                     </div>
@@ -273,6 +271,44 @@
                         userSkills = Model.UserSkills,
                         isVolunteeredForActivity = Model.IsUserVolunteeredForActivity
                     });
+
+        $('#phone-input')
+            .keydown(function (e) {
+	        var key = e.charCode || e.keyCode || 0;
+	        $phonenumber = $(this);
+	        if (key !== 8 && key !== 9) {
+	            if ($phonenumber.val().length === 4) {
+	                $phonenumber.val($phonenumber.val() + ')');
+	            }
+	            if ($phonenumber.val().length === 5) {
+	                $phonenumber.val($phonenumber.val() + ' ');
+	            }			
+	            if ($phonenumber.val().length === 9) {
+	                $phonenumber.val($phonenumber.val() + '-');
+	            }
+	        }
+                return (key == 8 || 
+				    key == 9 ||
+				    key == 46 ||
+				    (key >= 48 && key <= 57) ||
+				    (key >= 96 && key <= 105));	
+            })
+            .bind('focus click', function () {
+                $phonenumber = $(this);
+                if ($phonenumber.val().length === 0) {
+                    $phonenumber.val('(');
+                }
+                else {
+	                var val = $phone.val();
+	                $phonenumber.val('').val(val);
+                }
+            })
+            .blur(function () {
+                $phonenumber = $(this);
+                if ($phonenumber.val() === '(') {
+                    $phonenumber.val('');
+                }
+            });
     </script>
     <script type="text/javascript" src="~/js/activity.js"></script>
     <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>

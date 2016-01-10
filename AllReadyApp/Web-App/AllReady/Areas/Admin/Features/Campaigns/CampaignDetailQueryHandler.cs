@@ -20,7 +20,7 @@ namespace AllReady.Areas.Admin.Features.Campaigns
             var campaign = _context.Campaigns
                                   .AsNoTracking()
                                   .Include(c => c.Activities)
-                                  .Include(m => m.ManagingTenant)
+                                  .Include(m => m.ManagingOrganization)
                                   .Include(ci => ci.CampaignImpact)
                                   .Include(c => c.CampaignContacts).ThenInclude(c => c.Contact)
                                   .Include(l => l.Location).ThenInclude(p => p.PostalCode)
@@ -35,11 +35,12 @@ namespace AllReady.Areas.Admin.Features.Campaigns
                     Id = campaign.Id,
                     Name = campaign.Name,
                     Description = campaign.Description,
-                    TenantId = campaign.ManagingTenantId,
-                    TenantName = campaign.ManagingTenant.Name,
+                    OrganizationId = campaign.ManagingOrganizationId,
+                    OrganizationName = campaign.ManagingOrganization.Name,
                     ImageUrl = campaign.ImageUrl,
-                    StartDate = campaign.StartDateTimeUtc,
-                    EndDate = campaign.EndDateTimeUtc,
+                    TimeZoneId = campaign.TimeZoneId,
+                    StartDate = campaign.StartDateTime,
+                    EndDate = campaign.EndDateTime,
                     CampaignImpact = campaign.CampaignImpact,
                     Location = campaign.Location.ToModel(),
                     Activities = campaign.Activities.Select(a => new ActivitySummaryModel
@@ -47,12 +48,13 @@ namespace AllReady.Areas.Admin.Features.Campaigns
                         Id = a.Id,
                         Name = a.Name,
                         Description = a.Description,
-                        StartDateTime = a.StartDateTimeUtc,
-                        EndDateTime = a.EndDateTimeUtc,
+                        TimeZoneId = campaign.TimeZoneId,
+                        StartDateTime = a.StartDateTime,
+                        EndDateTime = a.EndDateTime,
                         CampaignId = campaign.Id,
                         CampaignName = campaign.Name,
-                        TenantId = campaign.ManagingTenantId,
-                        TenantName = campaign.ManagingTenant.Name,
+                        OrganizationId = campaign.ManagingOrganizationId,
+                        OrganizationName = campaign.ManagingOrganization.Name,
                         ImageUrl = a.ImageUrl
                     })
                 };

@@ -13,7 +13,7 @@ namespace AllReady.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.0-rc1-16341")
+                .HasAnnotation("ProductVersion", "7.0.0-rc1-16348")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("AllReady.Models.Activity", b =>
@@ -25,7 +25,7 @@ namespace AllReady.Migrations
 
                     b.Property<string>("Description");
 
-                    b.Property<DateTime>("EndDateTimeUtc");
+                    b.Property<DateTimeOffset>("EndDateTime");
 
                     b.Property<string>("ImageUrl");
 
@@ -38,7 +38,7 @@ namespace AllReady.Migrations
 
                     b.Property<string>("OrganizerId");
 
-                    b.Property<DateTime>("StartDateTimeUtc");
+                    b.Property<DateTimeOffset>("StartDateTime");
 
                     b.HasKey("Id");
                 });
@@ -83,16 +83,16 @@ namespace AllReady.Migrations
 
                     b.Property<string>("Description");
 
-                    b.Property<DateTimeOffset?>("EndDateTimeUtc");
+                    b.Property<DateTimeOffset?>("EndDateTime");
 
                     b.Property<string>("Name")
                         .IsRequired();
 
                     b.Property<int>("NumberOfVolunteersRequired");
 
-                    b.Property<DateTimeOffset?>("StartDateTimeUtc");
+                    b.Property<int?>("OrganizationId");
 
-                    b.Property<int?>("TenantId");
+                    b.Property<DateTimeOffset?>("StartDateTime");
 
                     b.HasKey("Id");
                 });
@@ -123,6 +123,8 @@ namespace AllReady.Migrations
                     b.Property<string>("NormalizedUserName")
                         .HasAnnotation("MaxLength", 256);
 
+                    b.Property<int?>("OrganizationId");
+
                     b.Property<string>("PasswordHash");
 
                     b.Property<string>("PhoneNumber");
@@ -131,7 +133,8 @@ namespace AllReady.Migrations
 
                     b.Property<string>("SecurityStamp");
 
-                    b.Property<int?>("TenantId");
+                    b.Property<string>("TimeZoneId")
+                        .IsRequired();
 
                     b.Property<bool>("TwoFactorEnabled");
 
@@ -158,7 +161,7 @@ namespace AllReady.Migrations
 
                     b.Property<string>("Description");
 
-                    b.Property<DateTime>("EndDateTimeUtc");
+                    b.Property<DateTimeOffset>("EndDateTime");
 
                     b.Property<string>("FullDescription");
 
@@ -166,14 +169,17 @@ namespace AllReady.Migrations
 
                     b.Property<int?>("LocationId");
 
-                    b.Property<int>("ManagingTenantId");
+                    b.Property<int>("ManagingOrganizationId");
 
                     b.Property<string>("Name")
                         .IsRequired();
 
                     b.Property<string>("OrganizerId");
 
-                    b.Property<DateTime>("StartDateTimeUtc");
+                    b.Property<DateTimeOffset>("StartDateTime");
+
+                    b.Property<string>("TimeZoneId")
+                        .IsRequired();
 
                     b.HasKey("Id");
                 });
@@ -214,7 +220,7 @@ namespace AllReady.Migrations
 
                     b.Property<int?>("CampaignId");
 
-                    b.Property<int?>("TenantId");
+                    b.Property<int?>("OrganizationId");
 
                     b.HasKey("Id");
                 });
@@ -257,6 +263,34 @@ namespace AllReady.Migrations
                     b.Property<string>("State");
 
                     b.HasKey("Id");
+                });
+
+            modelBuilder.Entity("AllReady.Models.Organization", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int?>("LocationId");
+
+                    b.Property<string>("LogoUrl");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<string>("WebUrl");
+
+                    b.HasKey("Id");
+                });
+
+            modelBuilder.Entity("AllReady.Models.OrganizationContact", b =>
+                {
+                    b.Property<int>("OrganizationId");
+
+                    b.Property<int>("ContactId");
+
+                    b.Property<int>("ContactType");
+
+                    b.HasKey("OrganizationId", "ContactId", "ContactType");
                 });
 
             modelBuilder.Entity("AllReady.Models.PostalCodeGeo", b =>
@@ -302,6 +336,8 @@ namespace AllReady.Migrations
                     b.Property<string>("Name")
                         .IsRequired();
 
+                    b.Property<int?>("OwningOrganizationId");
+
                     b.Property<int?>("ParentSkillId");
 
                     b.HasKey("Id");
@@ -332,34 +368,6 @@ namespace AllReady.Migrations
                     b.Property<int>("SkillId");
 
                     b.HasKey("TaskId", "SkillId");
-                });
-
-            modelBuilder.Entity("AllReady.Models.Tenant", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int?>("LocationId");
-
-                    b.Property<string>("LogoUrl");
-
-                    b.Property<string>("Name")
-                        .IsRequired();
-
-                    b.Property<string>("WebUrl");
-
-                    b.HasKey("Id");
-                });
-
-            modelBuilder.Entity("AllReady.Models.TenantContact", b =>
-                {
-                    b.Property<int>("TenantId");
-
-                    b.Property<int>("ContactId");
-
-                    b.Property<int>("ContactType");
-
-                    b.HasKey("TenantId", "ContactId", "ContactType");
                 });
 
             modelBuilder.Entity("AllReady.Models.UserSkill", b =>
@@ -496,16 +504,16 @@ namespace AllReady.Migrations
                         .WithMany()
                         .HasForeignKey("ActivityId");
 
-                    b.HasOne("AllReady.Models.Tenant")
+                    b.HasOne("AllReady.Models.Organization")
                         .WithMany()
-                        .HasForeignKey("TenantId");
+                        .HasForeignKey("OrganizationId");
                 });
 
             modelBuilder.Entity("AllReady.Models.ApplicationUser", b =>
                 {
-                    b.HasOne("AllReady.Models.Tenant")
+                    b.HasOne("AllReady.Models.Organization")
                         .WithMany()
-                        .HasForeignKey("TenantId");
+                        .HasForeignKey("OrganizationId");
                 });
 
             modelBuilder.Entity("AllReady.Models.Campaign", b =>
@@ -518,9 +526,9 @@ namespace AllReady.Migrations
                         .WithMany()
                         .HasForeignKey("LocationId");
 
-                    b.HasOne("AllReady.Models.Tenant")
+                    b.HasOne("AllReady.Models.Organization")
                         .WithMany()
-                        .HasForeignKey("ManagingTenantId");
+                        .HasForeignKey("ManagingOrganizationId");
 
                     b.HasOne("AllReady.Models.ApplicationUser")
                         .WithMany()
@@ -544,9 +552,9 @@ namespace AllReady.Migrations
                         .WithMany()
                         .HasForeignKey("CampaignId");
 
-                    b.HasOne("AllReady.Models.Tenant")
+                    b.HasOne("AllReady.Models.Organization")
                         .WithMany()
-                        .HasForeignKey("TenantId");
+                        .HasForeignKey("OrganizationId");
                 });
 
             modelBuilder.Entity("AllReady.Models.Location", b =>
@@ -556,8 +564,30 @@ namespace AllReady.Migrations
                         .HasForeignKey("PostalCodePostalCode");
                 });
 
+            modelBuilder.Entity("AllReady.Models.Organization", b =>
+                {
+                    b.HasOne("AllReady.Models.Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId");
+                });
+
+            modelBuilder.Entity("AllReady.Models.OrganizationContact", b =>
+                {
+                    b.HasOne("AllReady.Models.Contact")
+                        .WithMany()
+                        .HasForeignKey("ContactId");
+
+                    b.HasOne("AllReady.Models.Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId");
+                });
+
             modelBuilder.Entity("AllReady.Models.Skill", b =>
                 {
+                    b.HasOne("AllReady.Models.Organization")
+                        .WithMany()
+                        .HasForeignKey("OwningOrganizationId");
+
                     b.HasOne("AllReady.Models.Skill")
                         .WithMany()
                         .HasForeignKey("ParentSkillId");
@@ -583,24 +613,6 @@ namespace AllReady.Migrations
                     b.HasOne("AllReady.Models.AllReadyTask")
                         .WithMany()
                         .HasForeignKey("TaskId");
-                });
-
-            modelBuilder.Entity("AllReady.Models.Tenant", b =>
-                {
-                    b.HasOne("AllReady.Models.Location")
-                        .WithMany()
-                        .HasForeignKey("LocationId");
-                });
-
-            modelBuilder.Entity("AllReady.Models.TenantContact", b =>
-                {
-                    b.HasOne("AllReady.Models.Contact")
-                        .WithMany()
-                        .HasForeignKey("ContactId");
-
-                    b.HasOne("AllReady.Models.Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId");
                 });
 
             modelBuilder.Entity("AllReady.Models.UserSkill", b =>

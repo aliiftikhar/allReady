@@ -21,23 +21,27 @@ namespace AllReady.Areas.Admin.Models
         public string FullDescription { get; set; }
 
         [Display(Name = "Organization")]
-        public int TenantId { get; set; }
+        public int OrganizationId { get; set; }
 
         [Display(Name = "Organization")]
-        public string TenantName { get; set; }
+        public string OrganizationName { get; set; }
 
         public string ImageUrl { get; set; }
 
         [Display(Name = "Browse for image")]
         public string FileUpload { get; set; }
             
+        [Display(Name = "Time Zone")]
+        [Required]
+        public string TimeZoneId { get; set; }
+
         [Display(Name = "Start Date")]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:d}")]
-        public DateTime StartDate { get; set; }
+        public DateTimeOffset StartDate { get; set; }
 
         [Display(Name = "End Date")]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:d}")]
-        public DateTime EndDate { get; set; }
+        public DateTimeOffset EndDate { get; set; }
 
         public CampaignImpact CampaignImpact { get; set; }
 

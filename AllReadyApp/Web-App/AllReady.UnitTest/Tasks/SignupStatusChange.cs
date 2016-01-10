@@ -18,7 +18,7 @@ namespace AllReady.UnitTest.Tasks
         protected override void LoadTestData()
         {
             var context = ServiceProvider.GetService<AllReadyContext>();
-            Tenant htb = new Tenant()
+            Organization htb = new Organization()
             {
                 Name = "Humanitarian Toolbox",
                 LogoUrl = "http://www.htbox.org/upload/home/ht-hero.png",
@@ -28,7 +28,7 @@ namespace AllReady.UnitTest.Tasks
             Campaign firePrev = new Campaign()
             {
                 Name = "Neighborhood Fire Prevention Days",
-                ManagingTenant = htb
+                ManagingOrganization = htb
             };
             Activity queenAnne = new Activity()
             {
@@ -36,8 +36,8 @@ namespace AllReady.UnitTest.Tasks
                 Name = "Queen Anne Fire Prevention Day",
                 Campaign = firePrev,
                 CampaignId = firePrev.Id,
-                StartDateTimeUtc = new DateTime(2015, 7, 4, 10, 0, 0).ToUniversalTime(),
-                EndDateTimeUtc = new DateTime(2015, 12, 31, 15, 0, 0).ToUniversalTime(),
+                StartDateTime = new DateTime(2015, 7, 4, 10, 0, 0).ToUniversalTime(),
+                EndDateTime = new DateTime(2015, 12, 31, 15, 0, 0).ToUniversalTime(),
                 Location = new Location { Id = 1 },
                 RequiredSkills = new List<ActivitySkill>(),
             };
@@ -49,7 +49,7 @@ namespace AllReady.UnitTest.Tasks
             context.Users.Add(user1);
 
             htb.Campaigns.Add(firePrev);
-            context.Tenants.Add(htb);
+            context.Organizations.Add(htb);
             context.Activities.Add(queenAnne);
 
             var activitySignups = new List<ActivitySignup>();
@@ -62,9 +62,9 @@ namespace AllReady.UnitTest.Tasks
                 Activity = queenAnne,
                 Description = "Description of a very important task",
                 Name = "Task # 1",
-                EndDateTimeUtc = DateTime.Now.AddDays(5),
-                StartDateTimeUtc = DateTime.Now.AddDays(3),
-                Tenant = htb
+                EndDateTime = DateTime.Now.AddDays(5),
+                StartDateTime = DateTime.Now.AddDays(3),
+                Organization = htb
             };
             newTask.AssignedVolunteers.Add(new TaskSignup()
             {
